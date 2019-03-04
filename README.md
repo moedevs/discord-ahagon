@@ -28,7 +28,7 @@ const ping = {
 
 const avatar = {
   name: "avatar",
-  run: ({ author, message }) => message.channel.send(author.avatarURL)
+  run: ({ message }) => message.channel.send(message.author.avatarURL)
 }
 
 module.exports = { ping, avatar };
