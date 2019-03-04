@@ -1,0 +1,23 @@
+{
+  "name": "ahagon",
+  "version": "1.0.0",
+  "description": "A zero bloat discord.js command framework",
+  "main": "./dist/index.js",
+  "types": "./main.d.ts",
+  "scripts": {
+    "test": "jest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^11.4.2"
+  },
+  "devDependencies": {
+    "@types/jest": "^24.0.9",
+    "@types/node": "^11.10.4",
+    "jest": "^24.1.0",
+    "ts-jest": "^24.0.0",
+    "typescript": "^3.3.3333"
+  }
+}
