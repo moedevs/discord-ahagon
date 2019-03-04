@@ -1,6 +1,8 @@
 import { Client, Message, PermissionResolvable } from "discord.js";
 
 export interface HandlerOptions {
+  prefix?: string;
+  prefixResolver?: (ctx: Context) => Promise<string> | string;
   commandsDirectory: string;
   checkTsFiles?: boolean;
 }
@@ -43,3 +45,5 @@ export interface Command {
   botPermissions?: CommandPermission;
   run: (ctx: Context, args: ArgObject) => void;
 }
+
+export type CtxCallback = (ctx: Context) => void;
