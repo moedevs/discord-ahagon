@@ -7,7 +7,7 @@ export const test1 = createCommand({
 });
 
 export const test2 = createCommand({
-  name: "test2",
+  name: "test3",
   run: () => {
   }
 });

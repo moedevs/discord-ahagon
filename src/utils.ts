@@ -37,3 +37,5 @@ export const glob = async (path: string, regex: RegExp): Promise<string[]> => {
 
   return [...matchingFiles, ...rest]
 };
+
+export const arrayify = <T>(input: T[] | T) => Array.isArray(input) ? input : [input];

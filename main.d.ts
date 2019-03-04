@@ -1,8 +1,11 @@
 import { Client, Message, PermissionResolvable } from "discord.js";
 
+export type PrefixResolverFunc = (ctx: Context) => Promise<string> | string;
+
 export interface HandlerOptions {
   prefix?: string;
-  prefixResolver?: (ctx: Context) => Promise<string> | string;
+  mentionPrefix?: boolean;
+  prefixResolver?: PrefixResolverFunc;
   commandsDirectory: string;
   checkTsFiles?: boolean;
 }

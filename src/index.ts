@@ -1,2 +1,2 @@
-export * from "./command_handler";
-export * from "./command";
+export { createHandler } from "./command_handler";
+export { createCommand } from "./command";

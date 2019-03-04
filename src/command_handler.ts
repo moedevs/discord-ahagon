@@ -1,17 +1,20 @@
-import { Command, Context, CtxCallback, HandlerOptions } from "../main";
+import { Command, CtxCallback, HandlerOptions } from "../main";
 import { flatMap, glob } from "./utils";
 import { Client, Message } from "discord.js";
-import { MessageContext } from "./internal";
-import { validateHandlerParams } from "./validators";
+import { FindCommandOptions, MessageContext } from "./internal";
+import { validateHandlerParams, validateUniqueCommand } from "./validators";
 
-const TS_REGEX = /.*\.(js|ts)/;
-const JS_REGEX = /.*\.js/;
+export const TS_REGEX = /.*\.(js|ts)/;
+export const JS_REGEX = /.*\.js/;
+
+export const middlewareHandler = (collector: CtxCallback[]) => (...func: CtxCallback[]) =>
+  func.forEach(fun => collector.push(fun));
 
 /**
  * Gather an array of commands
  * @param obj
  */
-const gatherCommands = (obj: Array<Command> | { [k: string]: Command }) => {
+export const gatherCommands = (obj: Array<Command> | { [k: string]: Command }) => {
   if (Array.isArray(obj)) {
     return obj;
   }
@@ -22,27 +25,42 @@ const gatherCommands = (obj: Array<Command> | { [k: string]: Command }) => {
  * Gather commands from a file, if a default exists, only grab the default
  * @param path
  */
-const extractFileCommands = (path: string) => {
+export const extractFileCommands = (path: string) => {
   const e = require(path);
   return gatherCommands('default' in e ? e.default : e);
 };
 
-const generateCommandMap = (commands: Command[]): Map<string, Command> => {
+export const generateCommandMap = (commands: Command[]): Map<string, Command> => {
   return commands.reduce((map, command) => {
-    const names = Array.from(command.name);
+    validateUniqueCommand(command, map);
+    const names = Array.isArray(command.name) ? command.name : [command.name];
     names.forEach(name => map.set(name, command));
     return map;
   }, new Map<string, Command>());
 };
 
-/**
- * Handling incoming messages to run commands
- * @param ctx
- */
-const handleMessage = ({ message, handler }: MessageContext) => {
+export const findCommand = ({ content, commands, prefix, mentionPrefix }: FindCommandOptions) => {
   // it's possible that commands might need to be multiline, so we
   // specifically split on spaces and not \s
-  const [command, ...args] = message.content.trim().split(/ +/);
+  const [firstWord] = content.trim().split(/ +/);
+
+  const commandName = firstWord.slice(prefix.length);
+  return commands.get(commandName);
+};
+
+/**
+ * Handling incoming messages to run commands
+ * @param _ctx
+ */
+export const handleMessage = async ({ opts, message, handler, commands, before, after }: MessageContext) => {
+  const { prefix: _prefix, prefixResolver, mentionPrefix = false } = opts;
+  const { content } = message;
+
+  const ctx = { message, client: message.client, handler };
+
+  // one of these is guaranteed to be defined
+  const prefix = _prefix || await prefixResolver!(ctx);
+  return findCommand({ content, commands, prefix, mentionPrefix });
 };
 
 /**
@@ -59,14 +77,14 @@ export const createHandler = async (client: Client, opts: HandlerOptions) => {
   const paths = await glob(opts.commandsDirectory, opts.checkTsFiles ? TS_REGEX : JS_REGEX);
   const commandsList = flatMap(extractFileCommands, paths);
   const commands = generateCommandMap(commandsList);
-  const _ctx = { before, after, commands };
+  const _ctx = { before, after, commands, handler: { commands: commandsList } };
 
-  client.on("message", (message: Message) => handleMessage({ message, handler: _ctx }));
+  client.on("message", (message: Message) => handleMessage({ message, ..._ctx, opts }));
 
   return {
     commands,
-    pre: (func: CtxCallback) => before.push(func),
-    post: (func: CtxCallback) => after.push(func),
+    pre: middlewareHandler(before),
+    post: middlewareHandler(after)
   };
 };
 
