@@ -1,6 +1,6 @@
 import { createCommand } from "../../command";
 
 export default [createCommand({
-  name: 'test',
+  name: ['test'],
   run: () => {}
 })];

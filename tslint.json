@@ -4,6 +4,24 @@
         "tslint:recommended"
     ],
     "jsRules": {},
-    "rules": {},
+    "rules": {
+        "triple-equals": true,
+        "no-var-keyword": true,
+        "no-eval": true,
+        "no-bitwise": true,
+        "no-implicit-dependencies": true,
+        "no-angle-bracket-type-assertion": true,
+        "no-null-keyword": true,
+        "no-boolean-literal-compare": true,
+        "no-default-export": true,
+        "no-unnecessary-callback-wrapper": true,
+        "no-trailing-whitespace": true,
+        "no-this-assignment": true,
+        "prefer-template": true,
+        "prefer-for-of": true,
+        "prefer-object-spread": true,
+        "prefer-readonly": true,
+        "prefer-const": true
+    },
     "rulesDirectory": []
 }
