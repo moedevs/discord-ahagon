@@ -1,4 +1,4 @@
-# Ahagon
+# discord-ahagon
 A zero bloat discord.js command framework
 
 ##### Warning: This library is still work in progress, anything can change
