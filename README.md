@@ -1,4 +1,4 @@
-# Ahagon
+# discord-ahagon
 A zero bloat discord.js command framework
 
 ##### Warning: This library is still work in progress, anything can change
@@ -7,6 +7,8 @@ A zero bloat discord.js command framework
 
 Adding a command handler
 ```javascript
+// src/index.js
+
 const { createHandler } = require("ahagon");
 
 const handler = createHandler({
@@ -20,13 +22,13 @@ Adding commands
 // src/commands/util.js
 
 const ping = {
-	name: ["ping", "p"],
-	run: ctx => ctx.message.reply("Pong!")
+  name: ["ping", "p"],
+  run: ctx => ctx.message.reply("Pong!")
 }
 
 const avatar = {
-	name: "avatar",
-	run: ({ author, message }) => message.channel.send(author.avatarURL)
+  name: "avatar",
+  run: ({ message }) => message.channel.send(message.author.avatarURL)
 }
 
 module.exports = { ping, avatar };
