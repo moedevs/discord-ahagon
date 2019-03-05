@@ -10,14 +10,14 @@ export interface HandlerOptions {
   checkTsFiles?: boolean;
 }
 
-export interface Handler {
+export interface CommandHandler {
   commands: Command[];
 }
 
 export interface Context {
   message: Message;
   client: Client;
-  handler: Handler;
+  commandHandler: CommandHandler;
 }
 
 export interface ArgCondition {
@@ -47,6 +47,11 @@ export interface Command {
   userPermissions?: CommandPermission;
   botPermissions?: CommandPermission;
   run: (ctx: Context, args: ArgObject) => void;
+}
+
+export interface ParserOptions {
+  prefix: string;
+  mentionPrefix: boolean;
 }
 
 export type CtxCallback = (ctx: Context) => void;

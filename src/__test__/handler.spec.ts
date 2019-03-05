@@ -23,7 +23,7 @@ test('handle message working', async (next) => {
     message: { content: "!test1" } as Message,
     before: [],
     after: [],
-    handler: { commands: [] },
+    commandHandler: { commands: [] },
     commands
   });
   expect(command).toHaveProperty('name', 'test1');

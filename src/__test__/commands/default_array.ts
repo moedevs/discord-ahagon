@@ -1,6 +1,6 @@
 import { createCommand } from "../../command";
 
-export default [createCommand({
+export default [{
   name: ['test'],
   run: () => {}
-})];
+}];

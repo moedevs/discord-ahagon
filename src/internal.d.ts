@@ -1,5 +1,5 @@
 import { Message } from "discord.js";
-import { Command, CtxCallback, Handler, HandlerOptions } from "../main";
+import { Command, CommandHandler, CtxCallback, HandlerOptions } from "../main";
 
 type CommandMap = Map<string, Command>
 
@@ -9,7 +9,7 @@ export interface MessageContext {
   readonly before: CtxCallback[];
   readonly after: CtxCallback[];
   readonly commands: CommandMap;
-  readonly handler: Handler;
+  readonly commandHandler: CommandHandler;
 }
 
 export interface FindCommandOptions {

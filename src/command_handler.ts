@@ -27,7 +27,7 @@ export const gatherCommands = (obj: Array<Command> | { [k: string]: Command }) =
  */
 export const extractFileCommands = (path: string) => {
   const e = require(path);
-  return gatherCommands('default' in e ? e.default : e);
+  return gatherCommands(e.default || e);
 };
 
 export const generateCommandMap = (commands: Command[]): Map<string, Command> => {
@@ -52,11 +52,11 @@ export const findCommand = ({ content, commands, prefix, mentionPrefix }: FindCo
  * Handling incoming messages to run commands
  * @param _ctx
  */
-export const handleMessage = async ({ opts, message, handler, commands, before, after }: MessageContext) => {
+export const handleMessage = async ({ opts, message, commandHandler, commands, before, after }: MessageContext) => {
   const { prefix: _prefix, prefixResolver, mentionPrefix = false } = opts;
   const { content } = message;
 
-  const ctx = { message, client: message.client, handler };
+  const ctx = { message, client: message.client, commandHandler };
 
   // one of these is guaranteed to be defined
   const prefix = _prefix || await prefixResolver!(ctx);
@@ -77,7 +77,7 @@ export const createHandler = async (client: Client, opts: HandlerOptions) => {
   const paths = await glob(opts.commandsDirectory, opts.checkTsFiles ? TS_REGEX : JS_REGEX);
   const commandsList = flatMap(extractFileCommands, paths);
   const commands = generateCommandMap(commandsList);
-  const _ctx = { before, after, commands, handler: { commands: commandsList } };
+  const _ctx = { before, after, commands, commandHandler: { commands: commandsList } };
 
   client.on("message", (message: Message) => handleMessage({ message, ..._ctx, opts }));
 
