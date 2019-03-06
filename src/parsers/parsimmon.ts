@@ -61,7 +61,7 @@ const alwaysArgs = [{
   name: "command",
 }];
 
-const args: Argument[] = [{
+const input: Argument[] = [{
   type: ArgType.NUMBER,
   name: "count",
 }, {
@@ -70,8 +70,6 @@ const args: Argument[] = [{
   repeat: true,
 }];
 
-const muteParser = createCommandParser([...alwaysArgs, ...args]).parser;
+const muteParser = createCommandParser([...alwaysArgs, ...input]).parser;
 
 const e = muteParser.tryParse("!mute 60 60 06 060 66 000650");
-
-console.log(e);
