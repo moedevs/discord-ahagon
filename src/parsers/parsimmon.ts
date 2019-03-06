@@ -1,9 +1,8 @@
 import P from "parsimmon";
-import { MessageMentions } from "discord.js";
+import { Argument } from "../../main";
 
-export const enum ParserType {
+export const enum ArgType {
   MEMBER_MENTION = "member_mention",
-  MEMBER = "member",
   PREFIX = "prefix",
   COMMAND = "command",
   CHANNEL_MENTION = "channel_mention",
@@ -13,7 +12,7 @@ export const enum ParserType {
   FLAG = "flag",
   WORD = "word",
   QUOTED_STRING = "quoted_string",
-  TEXT = "text"
+  TEXT = "text",
 }
 
 const USERS_PATTERN = /<@!?[0-9]+>/;
@@ -22,38 +21,57 @@ const ROLES_PATTERN = /<@&[0-9]+>/;
 
 const lexeme = <T>(parser: P.Parser<T>) => parser.skip(P.optWhitespace);
 
-const createCommandParser = (options: ParserType[]) => P.createLanguage({
+const repeatArg = <T>(parser: P.Parser<T>) => parser.sepBy(P.string(" "));
+
+const createCommandParser = (args: Argument[]) => P.createLanguage({
   quote: () => P.string('"'),
-  [ParserType.WORD]: () => P.letters.node("word"),
-  [ParserType.FLAG]: () => P.string("--").then(P.letters),
-  [ParserType.MEMBER_MENTION]: () => P.regex(USERS_PATTERN).node("member_mention"),
-  [ParserType.CHANNEL_MENTION]: () => P.regex(CHANNELS_PATTERN).node("channel_mention"),
-  [ParserType.ROLE_MENTION]: () => P.regex(ROLES_PATTERN).node("role_mention"),
-  [ParserType.NUMBER]: () => P.digits.map(Number).node('number'),
-  [ParserType.STRING]: (r: P.Language) => P.alt(r.quoted_string, r.word),
-  [ParserType.QUOTED_STRING]: (r: P.Language) =>
+  [ArgType.WORD]: () => P.letters.node("word"),
+  [ArgType.FLAG]: () => P.alt(P.string("--"), P.string("-")).then(P.letters),
+  [ArgType.MEMBER_MENTION]: () => P.regex(USERS_PATTERN).node("member_mention"),
+  [ArgType.CHANNEL_MENTION]: () => P.regex(CHANNELS_PATTERN).node("channel_mention"),
+  [ArgType.ROLE_MENTION]: () => P.regex(ROLES_PATTERN).node("role_mention"),
+  [ArgType.NUMBER]: () => P.digits.map(Number).node("number"),
+  [ArgType.STRING]: (r: P.Language) => P.alt(r.quoted_string, r.word),
+  [ArgType.QUOTED_STRING]: (r: P.Language) =>
     r.quote
       .then(P.noneOf('"').many().tie())
       .skip(r.quote)
       .node("quoted_string"),
-  [ParserType.TEXT]: () => P.all.node("text"),
-  [ParserType.COMMAND]: () => P.regex(/(\w|\d)+/).node("command"),
-  [ParserType.PREFIX]: () => P.string("!").node("prefix"),
-  // parser: r => P.seq(...options.map(option => lexeme(r[option])))
-  parser: r => P.seq(lexeme(r.prefix), lexeme(r.command), r.number.sepBy(P.string(" ")))
+  [ArgType.TEXT]: () => P.all.node("text"),
+  [ArgType.COMMAND]: () => P.regex(/(\w|\d)+/).node("command"),
+  [ArgType.PREFIX]: () => P.string("!").node("prefix"),
+  parser: (r) => {
+    const parsers = args.map((arg) => {
+      const parser = r[arg.type];
+      if (arg.repeat) {
+        // repeat args are guaranteed to be the last
+        return repeatArg(parser);
+      }
+      return lexeme(parser);
+    });
+    return P.seq(...parsers);
+  },
 });
 
-const alwaysArgs = [
-  ParserType.PREFIX,
-  ParserType.COMMAND
-];
+const alwaysArgs = [{
+  type: ArgType.PREFIX,
+  name: "prefix",
+}, {
+  type: ArgType.COMMAND,
+  name: "command",
+}];
 
-const args = [
-  ParserType.NUMBER,
-];
+const args: Argument[] = [{
+  type: ArgType.NUMBER,
+  name: "count",
+}, {
+  type: ArgType.NUMBER,
+  name: "count",
+  repeat: true,
+}];
 
 const muteParser = createCommandParser([...alwaysArgs, ...args]).parser;
 
-const e = muteParser.tryParse('!mute 60 60 06 060 66 000650');
+const e = muteParser.tryParse("!mute 60 60 06 060 66 000650");
 
 console.log(e);

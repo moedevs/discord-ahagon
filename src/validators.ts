@@ -12,13 +12,12 @@ export const validateHandlerParams = (opts: HandlerOptions) => {
   }
 };
 
-
 export const validateUniqueCommand = (command: Command, commands: CommandMap) => {
   const names = arrayify(command.name);
-  names.forEach(name => {
+  names.forEach((name) => {
     if (commands.has(name)) {
       throw new Error(
-        `Tried adding a command with a name ${command.name} but a command of the same name already exists`
+        `Tried adding a command with a name ${command.name} but a command of the same name already exists`,
       );
     }
   });
