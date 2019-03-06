@@ -26,12 +26,12 @@ jobs:
       - run: npm run lint
 workflows:
   version: 2
-  pipeline:
+  build-test-and-lint:
     jobs:
       - build
       - lint:
-          - requires:
-              - build
+          requires:
+            - build
       - test:
-          - requires:
-              - build
+          requires:
+            - build
