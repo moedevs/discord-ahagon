@@ -1,26 +1,9 @@
 import P from "parsimmon";
-import { Argument, ParserOptions } from "../../main";
-
-export const enum ArgType {
-  MEMBER_MENTION = "member_mention",
-  BOOLEAN = "boolean",
-  PREFIX = "prefix",
-  COMMAND = "command",
-  CHANNEL_MENTION = "channel_mention",
-  ROLE_MENTION = "role_mention",
-  NUMBER = "number",
-  STRING = "string",
-  FLAG = "flag",
-  WORD = "word",
-  QUOTED_STRING = "quoted_string",
-  TEXT = "text",
-}
+import { ArgType, Argument, ParserOptions } from "../../main";
 
 const USERS_PATTERN = /<@!?([0-9])+>/;
 const CHANNELS_PATTERN = /<#[0-9]+>/;
 const ROLES_PATTERN = /<@&[0-9]+>/;
-
-const lexeme = <T>(parser: P.Parser<T>) => parser.skip(P.optWhitespace);
 
 const repeatArg = <T>(parser: P.Parser<T>) => parser.sepBy(P.string(" "));
 
@@ -73,6 +56,7 @@ const createCommandParser = (args: Argument[], opts: ParserOptions) => P.createL
   },
   [ArgType.NUMBER]: () => {
     return P.regex(/[0-9]+/)
+      .map(Number)
       .node("number")
       .desc(ArgType.NUMBER);
   },
@@ -104,23 +88,6 @@ const createCommandParser = (args: Argument[], opts: ParserOptions) => P.createL
       : prefixParser;
     return parser.node("prefix").desc(ArgType.PREFIX);
   },
-  parser: (r) => {
-    const prefix: Argument = {
-      type: ArgType.PREFIX,
-      name: "prefix",
-    };
-
-    const parsers = [prefix, ...args].map((arg) => {
-      const parser = r[arg.type];
-      if (arg.repeat) {
-        // repeat args are guaranteed to be the last
-        return repeatArg(parser);
-      }
-      return lexeme(parser);
-    });
-
-    return P.seq(...parsers);
-  }
 });
 
 const input: Argument[] = [{
@@ -132,9 +99,75 @@ const input: Argument[] = [{
 }, {
   type: ArgType.BOOLEAN,
   name: "thing",
+  optional: true
 }];
 
-const muteParser = createCommandParser(input, { prefix: "!", mentionPrefix: true }).prefix;
+const lang = createCommandParser(input, { prefix: "!", mentionPrefix: true });
+const muteParser = lang.parser;
 
-const src = "<@12315412>mute 60";
-const e = muteParser.parse(src);
+const src = "<@12315412> mute 60";
+
+const prefix: Argument = {
+  type: ArgType.PREFIX,
+  name: "prefix",
+};
+
+const parsers: ParserArgs[] = [prefix, ...input].map((arg) => {
+  const parser = lang[arg.type];
+  if (arg.repeat) {
+    // repeat args are guaranteed to be one last
+    return { arg, parser: repeatArg(parser) };
+  }
+  return { arg, parser: parser.skip(P.all) };
+});
+
+export interface ParserResult {
+  name: string;
+  status: "success" | "fail";
+}
+
+export interface ParserArgs {
+  arg: Argument;
+  parser: P.Parser<any>;
+}
+
+const genSuccessfulOptional = (obj: object) => ({
+  ...obj,
+  status: "success",
+  value: ""
+});
+
+const genFailedOptional = (obj: object) => ({
+  ...obj,
+  status: "fail",
+  value: ""
+});
+
+const parse = (text: string, [head, ...tail]: ParserArgs[]): Array<P.Result<any>> => {
+  const parsed = head.parser.parse(text);
+
+  if (!parsed.status) {
+    return [];
+  }
+
+  const remainingText = text.slice(parsed.value.end.column);
+  const out = { ...parsed.value, status: "success" };
+  const hasMissingArgs = !remainingText && tail.length;
+
+  if (hasMissingArgs) {
+    const nextUnentered = tail.find((obj) => !obj.arg.optional);
+    // all remaining args are optional
+    if (!nextUnentered) {
+      return [out, ...tail.map((obj) => genSuccessfulOptional(obj.arg))];
+    }
+    return [out, genFailedOptional(nextUnentered.arg)];
+  }
+
+  if (!remainingText) {
+    return out;
+  }
+  return [out, ...parse(remainingText, tail)];
+};
+
+console.log(parse(src, parsers));
+// console.log(head.parse(src));

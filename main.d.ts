@@ -1,9 +1,11 @@
 import { Client, Message, PermissionResolvable } from "discord.js";
-import { ArgType } from "./src/parsers/parsimmon";
 import { CommandMap } from "./src/internal";
 
 export type PrefixResolverFunc = (ctx: Context) => Promise<string> | string;
 export type CheckFunc = (ctx: Context) => Promise<boolean> | boolean;
+export type FailCallback = (ctx: Context, err: ParserError) => void;
+export type EffectCallback = (ctx: Context) => (ctx: Context) => void;
+export type CtxCallback = (ctx: Context) => void;
 
 export interface HandlerOptions {
   prefix?: string;
@@ -24,10 +26,9 @@ export interface Context {
   commandHandler: CommandHandler;
 }
 
-export interface ArgCondition {
+export interface Check {
   check: CheckFunc;
-  onFail: CtxCallback;
-  onMissing: CtxCallback;
+  onFail: FailCallback;
 }
 
 export interface Argument {
@@ -35,9 +36,8 @@ export interface Argument {
   name: string;
   optional?: boolean;
   repeat?: boolean;
-  checks?: ArgCondition[];
-  check?: CheckFunc;
-  onFail?: CtxCallback;
+  checks?: Check[];
+  onFail?: FailCallback;
   onMissing?: CtxCallback;
 }
 
@@ -63,6 +63,21 @@ export interface ParserOptions {
   mentionPrefix: boolean;
 }
 
-export type EffectCallback = (ctx: Context) => (ctx: Context) => void;
+export const enum ParserError {
+  MISSING_ARG = "missing_arg"
+}
 
-export type CtxCallback = (ctx: Context) => void;
+export const enum ArgType {
+  MEMBER_MENTION = "member_mention",
+  BOOLEAN = "boolean",
+  PREFIX = "prefix",
+  COMMAND = "command",
+  CHANNEL_MENTION = "channel_mention",
+  ROLE_MENTION = "role_mention",
+  NUMBER = "number",
+  STRING = "string",
+  FLAG = "flag",
+  WORD = "word",
+  QUOTED_STRING = "quoted_string",
+  TEXT = "text",
+}
