@@ -15,14 +15,14 @@ jobs:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
       - persist_to_workspace:
-          root: /root/repo
+          root: /home/circleci/repo
           path: .
   test:
     docker:
       - image: circleci/node:10
     steps:
       - attach_workspace:
-          at: /root/repo
+          at: /home/circleci/repo
       - run: npm test
   lint:
     docker:
