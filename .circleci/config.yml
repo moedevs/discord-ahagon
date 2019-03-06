@@ -15,4 +15,20 @@ jobs:
           paths:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
+  test:
+    docker:
+      - image: circleci/node:10
+    steps:
       - run: npm test
+  lint:
+    docker:
+      - image: circleci/node:10
+    steps:
+      - run: npm run lint
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
+      - test
+      - lint
