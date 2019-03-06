@@ -11,7 +11,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-          keys: discord-ahagon-{{ checksum "package.json" }}
+          key: discord-ahagon-{{ checksum "package.json" }}
       - persist_to_workspace:
           root: .
           paths: .
