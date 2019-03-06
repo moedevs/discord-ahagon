@@ -2,7 +2,7 @@ import * as Discord from "discord.js";
 import { Command, Context } from "../../main";
 
 const getMemberFromID = (text: string, ctx: Context): Discord.GuildMember | undefined => {
-  if (!text || !ctx.message.guild) {
+  if (!ctx.message.guild) {
     return;
   }
   return ctx.message.guild.members.get(text);
