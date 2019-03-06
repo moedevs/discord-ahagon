@@ -7,11 +7,11 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            key: discord-ahagon-{{ checksum "package.json" }}
+            - discord-ahagon-{{ checksum "package.json" }}
       - run: npm install
       - save_cache:
           keys:
-            key: discord-ahagon-{{ checksum "package.json" }}
+            - discord-ahagon-{{ checksum "package.json" }}
       - persist_to_workspace:
           root: .
           paths: .
