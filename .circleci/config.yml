@@ -19,14 +19,14 @@ jobs:
     docker:
       - image: circleci/node:10
     steps:
-      - attach_to_workspace:
+      - attach_workspace:
           at: .
       - run: npm test
   lint:
     docker:
       - image: circleci/node:10
     steps:
-      - attach_to_workspace:
+      - attach_workspace:
           at: .
       - run: npm run lint
 workflows:
