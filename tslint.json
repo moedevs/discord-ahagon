@@ -24,6 +24,8 @@
         "object-literal-sort-keys": false,
         "no-empty": [true, "allow-empty-functions"],
         "variable-name": [true, "allow-leading-underscore"],
+        "interface-name": false,
+        "trailing-comma": false,
         "deprecation": true,
         "prefer-readonly": true,
         "prefer-const": true

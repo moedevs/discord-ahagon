@@ -6,7 +6,8 @@
   "types": "./main.d.ts",
   "scripts": {
     "test": "jest",
-    "lint": "tslint --project ."
+    "lint": "tslint --project .",
+    "fix": "tslint --project . --fix"
   },
   "keywords": [],
   "author": "",
