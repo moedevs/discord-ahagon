@@ -138,9 +138,3 @@ const muteParser = createCommandParser(input, { prefix: "!", mentionPrefix: true
 
 const src = "<@12315412>mute 60";
 const e = muteParser.parse(src);
-
-if (e.status) {
-  console.log(e);
-} else {
-  console.log(e);
-}
