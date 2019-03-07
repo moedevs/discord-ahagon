@@ -1,7 +1,7 @@
-import { Message } from "discord.js";
+import { Collection, Message } from "discord.js";
 import { Command, CommandHandler, EffectCallback, HandlerOptions } from "../main";
 
-type CommandMap = Map<string, Command>;
+type CommandMap = Collection<string, Command>;
 
 export interface MessageContext {
   readonly message: Message;

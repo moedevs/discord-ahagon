@@ -121,7 +121,7 @@ const parsers: ParserArgs[] = [prefix, ...input].map((arg) => {
   return { arg, parser: parser.skip(P.all) };
 });
 
-export interface ParserResult {
+export interface ParseError {
   name: string;
   status: "success" | "fail";
 }
@@ -156,8 +156,8 @@ const parse = (text: string, [head, ...tail]: ParserArgs[]): Array<P.Result<any>
 
   if (hasMissingArgs) {
     const nextUnentered = tail.find((obj) => !obj.arg.optional);
-    // all remaining args are optional
     if (!nextUnentered) {
+      // all remaining args are optional
       return [out, ...tail.map((obj) => genSuccessfulOptional(obj.arg))];
     }
     return [out, genFailedOptional(nextUnentered.arg)];

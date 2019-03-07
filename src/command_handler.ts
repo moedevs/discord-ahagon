@@ -1,4 +1,4 @@
-import { Client, Message } from "discord.js";
+import { Client, Collection, Message } from "discord.js";
 import { Command, CommandHandler, EffectCallback, HandlerOptions } from "../main";
 import { FindCommandOptions, MessageContext } from "./internal";
 import { arrayify, flatMap, glob } from "./utils";
@@ -27,13 +27,13 @@ export const extractFileCommands = (path: string) => {
   return gatherCommands(e.default || e);
 };
 
-export const generateCommandMap = (commands: Command[]): Map<string, Command> => {
+export const generateCommandMap = (commands: Command[]) => {
   return commands.reduce((map, command) => {
     validateUniqueCommand(command, map);
     const names = arrayify(command.name);
     names.forEach((name) => map.set(name, command));
     return map;
-  }, new Map<string, Command>());
+  }, new Collection<string, Command>());
 };
 
 export const findCommand = ({ content, commands, prefix, mentionPrefix }: FindCommandOptions) => {

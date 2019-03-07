@@ -1,4 +1,4 @@
-import { Client, Message } from "discord.js";
+import { Client, Collection, Message } from "discord.js";
 import { HandlerOptions } from "../../main";
 import { createHandler, findCommand, handleMessage } from "../command_handler";
 
@@ -21,7 +21,7 @@ test("handle message working", async (next) => {
   const command = await handleMessage({
     opts: { prefix: "!" } as HandlerOptions,
     message: { content: "!test1" } as Message,
-    commandHandler: { commands: new Map() },
+    commandHandler: { commands: new Collection() },
     effects: [],
     commands,
   });
