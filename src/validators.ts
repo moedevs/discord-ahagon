@@ -1,5 +1,4 @@
-import { Command, HandlerOptions } from "../main";
-import { CommandMap } from "./internal";
+import { Command, CommandMap, HandlerOptions } from "../main";
 import { arrayify } from "./utils";
 
 /**

@@ -36,7 +36,7 @@ export const generateCommandMap = (commands: Command[]) => {
   }, new Collection<string, Command>());
 };
 
-export const findCommand = ({ content, commands, prefix, mentionPrefix }: FindCommandOptions) => {
+export const findCommand = ({ content, commands, prefix }: FindCommandOptions) => {
   // it's possible that commands might need to be multiline, so we
   // specifically split on spaces and not \s
   const [firstWord] = content.trim().split(/ +/);
@@ -61,8 +61,7 @@ export const handleMessage = async ({ opts, message, commandHandler, commands, e
 };
 
 /**
- * Factory function for creating handlers, returns a handler object
- * when its done globbing commands
+ * Used for defining the command handler used to call commands [[HandlerOptions]]
  * @param client
  * @param opts
  */

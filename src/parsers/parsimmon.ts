@@ -1,11 +1,16 @@
+import { Message } from "discord.js";
 import P from "parsimmon";
 import { ArgType, Argument, ParserOptions } from "../../main";
+import { ArgParsingLanguage } from "../internal";
+import { arrayify } from "../utils";
 
 const USERS_PATTERN = /<@!?([0-9])+>/;
 const CHANNELS_PATTERN = /<#[0-9]+>/;
 const ROLES_PATTERN = /<@&[0-9]+>/;
 
 const repeatArg = <T>(parser: P.Parser<T>) => parser.sepBy(P.string(" "));
+
+const lexeme = <T>(parser: P.Parser<T>) => parser.skip(P.all);
 
 const truthy = ["yes", "true", "1", "on"];
 const falsy = ["no", "false", "0", "off"];
@@ -77,40 +82,40 @@ const createCommandParser = (args: Argument[], opts: ParserOptions) => P.createL
       .desc(ArgType.TEXT);
   },
   [ArgType.COMMAND]: () => {
-    return P.regex(/(\w|\d)+/)
+    return P.regexp(/(\w|\d)+/)
       .node("command")
       .desc(ArgType.COMMAND);
   },
   [ArgType.PREFIX]: (r: P.Language) => {
-    const prefixParser = P.string(opts.prefix);
-    const parser = opts.mentionPrefix
-      ? P.alt(r.member_mention, prefixParser)
-      : prefixParser;
-    return parser.node("prefix").desc(ArgType.PREFIX);
+    const prefixes = arrayify(opts.prefix);
+    const prefixParser = P.alt(...prefixes.map(P.string)).node("prefix");
+    const parser = P.alt(r.member_mention, prefixParser);
+    return parser.desc(ArgType.PREFIX);
   },
-});
+}) as ArgParsingLanguage;
 
 const input: Argument[] = [{
   type: ArgType.COMMAND,
   name: "command",
 }, {
-  type: ArgType.NUMBER,
-  name: "count",
-}, {
-  type: ArgType.BOOLEAN,
-  name: "thing",
-  optional: true
+  type: ArgType.CHANNEL_MENTION,
+  name: "channels",
+  repeat: true
 }];
 
-const lang = createCommandParser(input, { prefix: "!", mentionPrefix: true });
-const muteParser = lang.parser;
+const parserOptions = { prefix: ["!", "@", "uwu"], mentionPrefix: true };
 
-const src = "<@12315412> mute 60";
+const lang = createCommandParser(input, parserOptions);
+
+const src = "!delete <#123214> <#12312412> <#15161>";
 
 const prefix: Argument = {
   type: ArgType.PREFIX,
   name: "prefix",
 };
+
+const isValidPrefix = (content: string, language: ArgParsingLanguage) =>
+  language[ArgType.PREFIX].skip(P.all).parse(content).status === true;
 
 const parsers: ParserArgs[] = [prefix, ...input].map((arg) => {
   const parser = lang[arg.type];
@@ -118,7 +123,7 @@ const parsers: ParserArgs[] = [prefix, ...input].map((arg) => {
     // repeat args are guaranteed to be one last
     return { arg, parser: repeatArg(parser) };
   }
-  return { arg, parser: parser.skip(P.all) };
+  return { arg, parser: lexeme(parser) };
 });
 
 export interface ParseError {
@@ -147,11 +152,21 @@ const parse = (text: string, [head, ...tail]: ParserArgs[]): Array<P.Result<any>
   const parsed = head.parser.parse(text);
 
   if (!parsed.status) {
+    const [erroredWord] = text.slice(parsed.index.column).split(/\s+/);
     return [];
   }
 
-  const remainingText = text.slice(parsed.value.end.column);
-  const out = { ...parsed.value, status: "success" };
+  let cursorPosition;
+  if (parsed.value.end) {
+    cursorPosition = parsed.value.end.offset;
+  } else if (Array.isArray(parsed.value)) {
+    cursorPosition = Math.max(...parsed.value.map((item: { end: number }) => item.end));
+  } else {
+    throw Error(`Unexpected parser output ${JSON.stringify(parsed.value)}`);
+  }
+
+  const remainingText = text.slice(cursorPosition);
+  const out = { ...parsed.value, status: "success", ...head };
   const hasMissingArgs = !remainingText && tail.length;
 
   if (hasMissingArgs) {
@@ -166,8 +181,10 @@ const parse = (text: string, [head, ...tail]: ParserArgs[]): Array<P.Result<any>
   if (!remainingText) {
     return out;
   }
+
   return [out, ...parse(remainingText, tail)];
 };
-
 console.log(parse(src, parsers));
-// console.log(head.parse(src));
+// const e = isValidPrefix("<@124125> help", lang);
+
+// console.log(e);

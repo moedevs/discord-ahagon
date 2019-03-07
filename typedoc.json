@@ -1,0 +1,4 @@
+{
+	"out": "docs",
+	"exclude": "src/__test__/*"
+}

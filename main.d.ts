@@ -1,6 +1,7 @@
-import { Client, Message, PermissionResolvable } from "discord.js";
-import { CommandMap } from "./src/internal";
+import { Client, Collection, Message, PermissionResolvable } from "discord.js";
 
+export type CommandMap = Collection<string, Command>;
+export type Prefix = string | string[];
 export type PrefixResolverFunc = (ctx: Context) => Promise<string> | string;
 export type CheckFunc = (ctx: Context) => Promise<boolean> | boolean;
 export type FailCallback = (ctx: Context, err: ParserError) => void;
@@ -8,7 +9,7 @@ export type EffectCallback = (ctx: Context) => (ctx: Context) => void;
 export type CtxCallback = (ctx: Context) => void;
 
 export interface HandlerOptions {
-  prefix?: string;
+  prefix?: Prefix;
   mentionPrefix?: boolean;
   prefixResolver?: PrefixResolverFunc;
   commandsDirectory: string;
@@ -59,7 +60,7 @@ export interface Command {
 }
 
 export interface ParserOptions {
-  prefix: string;
+  prefix: Prefix;
   mentionPrefix: boolean;
 }
 
