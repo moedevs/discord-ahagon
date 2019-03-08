@@ -60,7 +60,7 @@ export interface HandlerOptions<T extends {}> {
    * Additional objects to be intersected onto the `ctx`
    * callback of functions for ease of use
    */
-  ctx: T;
+  ctx?: T;
   /**
    * Whether or not `.ts` files are checked instead of `.js`
    *

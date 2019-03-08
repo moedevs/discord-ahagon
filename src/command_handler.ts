@@ -49,7 +49,7 @@ export const findCommand = ({ content, commands, prefix }: FindCommandOptions) =
  * Handling incoming messages to run commands
  * @param _ctx
  */
-export const handleMessage = async ({ opts, message, commandHandler, commands, effects }: MessageContext) => {
+export const handleMessage = async <T>({ opts, message, commandHandler, commands, effects }: MessageContext<T>) => {
   const { prefix: _prefix, prefixResolver, mentionPrefix = false } = opts;
   const { content } = message;
 
@@ -65,7 +65,7 @@ export const handleMessage = async ({ opts, message, commandHandler, commands, e
  * @param client
  * @param opts
  */
-export const createHandler = async (client: Client, opts: HandlerOptions): Promise<CommandHandler> => {
+export const createHandler = async <T>(client: Client, opts: HandlerOptions<T>): Promise<CommandHandler> => {
   validateHandlerParams(opts);
   const effects: EffectCallback[] = [];
 

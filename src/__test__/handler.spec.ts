@@ -19,7 +19,7 @@ test("command globbing works", async (next) => {
 test("handle message working", async (next) => {
   const { commands } = await handler;
   const command = await handleMessage({
-    opts: { prefix: "!" } as HandlerOptions,
+    opts: { prefix: "!" } as HandlerOptions<{}>,
     message: { content: "!test1" } as Message,
     commandHandler: { commands: new Collection() },
     effects: [],

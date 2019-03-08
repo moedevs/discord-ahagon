@@ -2,9 +2,9 @@ import { Message } from "discord.js";
 import { Parser } from "parsimmon";
 import { ArgType, CommandHandler, CommandMap, EffectCallback, HandlerOptions, Prefix } from "../main";
 
-export interface MessageContext {
+export interface MessageContext<T> {
   readonly message: Message;
-  readonly opts: HandlerOptions;
+  readonly opts: HandlerOptions<T>;
   readonly effects: EffectCallback[];
   readonly commands: CommandMap;
   readonly commandHandler: CommandHandler;

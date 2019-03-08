@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="20" failures="0" time="2.369">
+  <testsuite name="prefixes" errors="0" failures="0" skipped="0" timestamp="2019-03-08T19:20:49" time="0.593" tests="16">
+    <testcase classname="prefixes works with single prefixes" name="prefixes works with single prefixes" time="0.004">
+    </testcase>
+    <testcase classname="prefixes works with an array of prefixes" name="prefixes works with an array of prefixes" time="0.001">
+    </testcase>
+    <testcase classname="prefixes works with mentions and extracts id" name="prefixes works with mentions and extracts id" time="0">
+    </testcase>
+    <testcase classname="with no arguments passing with preset commands" name="with no arguments passing with preset commands" time="0.001">
+    </testcase>
+    <testcase classname="with no arguments wrong command with strict command checking" name="with no arguments wrong command with strict command checking" time="0">
+    </testcase>
+    <testcase classname="with no arguments failing without preset commands" name="with no arguments failing without preset commands" time="0">
+    </testcase>
+    <testcase classname="with arguments labeling args" name="with arguments labeling args" time="0.001">
+    </testcase>
+    <testcase classname="with arguments repeat args:numbers" name="with arguments repeat args:numbers" time="0">
+    </testcase>
+    <testcase classname="with arguments repeat args:quoted strings" name="with arguments repeat args:quoted strings" time="0.001">
+    </testcase>
+    <testcase classname="arg types numbers" name="arg types numbers" time="0.001">
+    </testcase>
+    <testcase classname="arg types quoted strings" name="arg types quoted strings" time="0">
+    </testcase>
+    <testcase classname="arg types truthy booleans" name="arg types truthy booleans" time="0">
+    </testcase>
+    <testcase classname="arg types falsy booleans" name="arg types falsy booleans" time="0.001">
+    </testcase>
+    <testcase classname="arg types channel mentions" name="arg types channel mentions" time="0">
+    </testcase>
+    <testcase classname="arg types parses member mentions" name="arg types parses member mentions" time="0">
+    </testcase>
+    <testcase classname="arg types parses member role mentions" name="arg types parses member role mentions" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="undefined" errors="0" failures="0" skipped="0" timestamp="2019-03-08T19:20:49" time="2.121" tests="4">
+    <testcase classname=" command globbing works" name=" command globbing works" time="0.313">
+    </testcase>
+    <testcase classname=" handle message working" name=" handle message working" time="0.007">
+    </testcase>
+    <testcase classname=" find command working" name=" find command working" time="0.003">
+    </testcase>
+    <testcase classname=" detecting duplicate commands" name=" detecting duplicate commands" time="0.101">
+    </testcase>
+  </testsuite>
+</testsuites>
