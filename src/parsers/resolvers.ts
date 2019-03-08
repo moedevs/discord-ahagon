@@ -1,14 +1,15 @@
-import * as Discord from "discord.js";
-import { Command, Context } from "../../main";
+import { Collection, Emoji, GuildMember, Role, TextChannel } from "discord.js";
+import { ArgType, Command, Context, HandlerOptions } from "../../main";
+import { ParserReturn } from "./parser";
 
-const getMemberFromID = (text: string, ctx: Context): Discord.GuildMember | undefined => {
+const getMemberFromID = <T>(ctx: Context<T>, text: string): GuildMember | undefined => {
   if (!ctx.message.guild) {
     return;
   }
   return ctx.message.guild.members.get(text);
 };
 
-const getMemberFromName = (text: string, ctx: Context): Discord.GuildMember | undefined => {
+const getMemberFromName = <T>(ctx: Context<T>, text: string): GuildMember | undefined => {
   if (!ctx.message.guild) {
     return;
   }
@@ -17,30 +18,30 @@ const getMemberFromName = (text: string, ctx: Context): Discord.GuildMember | un
   });
 };
 
-const getTextChannelFromID = (text: string, ctx: Context): Discord.TextChannel | undefined => {
+const getTextChannelFromID = <T>(ctx: Context<T>, text: string): TextChannel | undefined => {
   if (!ctx.message.guild) {
     return;
   }
-  return ctx.message.guild.channels.get(text) as Discord.TextChannel | undefined;
+  return ctx.message.guild.channels.get(text) as TextChannel | undefined;
 };
 
-const getTextChannelFromName = (text: string, ctx: Context): Discord.TextChannel | undefined => {
+const getTextChannelFromName = <T>(ctx: Context<T>, text: string): TextChannel | undefined => {
   if (!ctx.message.guild) {
     return;
   }
   return ctx.message.guild.channels.find((channel) => {
-    return channel.name === text && channel instanceof Discord.TextChannel;
-  }) as Discord.TextChannel | undefined;
+    return channel.name === text && channel instanceof TextChannel;
+  }) as TextChannel | undefined;
 };
 
-const getRoleFromID = (text: string, ctx: Context): Discord.Role | undefined => {
+const getRoleFromID = <T>(ctx: Context<T>, text: string): Role | undefined => {
   if (!ctx.message.guild) {
     return;
   }
   return ctx.message.guild.roles.get(text);
 };
 
-const getRoleFromName = (text: string, ctx: Context): Discord.Role | undefined => {
+const getRoleFromName = <T>(ctx: Context<T>, text: string): Role | undefined => {
   if (!ctx.message.guild) {
     return;
   }
@@ -49,7 +50,7 @@ const getRoleFromName = (text: string, ctx: Context): Discord.Role | undefined =
   });
 };
 
-const getEmojiFromString = (text: string, ctx: Context): Discord.Emoji | undefined => {
+const getEmojiFromString = <T>(ctx: Context<T>, text: string): Emoji | undefined => {
   if (!ctx.message.guild) {
     return;
   }
@@ -61,4 +62,13 @@ const getEmojiFromString = (text: string, ctx: Context): Discord.Emoji | undefin
   return ctx.message.guild.emojis.get(text);
 };
 
-const getCommandFromName = (commands: Discord.Collection<string, Command>, input: string) => commands.get(input);
+const getCommandFromName = (commands: Collection<string, Command>, input: string) => commands.get(input);
+
+const resolvers = new Collection<ArgType, <T>(ctx: Context<T>, text: string) => void>([
+  [ArgType.MEMBER_MENTION, getMemberFromID],
+  [ArgType.MEMBER, getMemberFromName]
+]);
+
+const resolveParseResults = <T>(results: ParserReturn[], opts: HandlerOptions<T>) => {
+
+};

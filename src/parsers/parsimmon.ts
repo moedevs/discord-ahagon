@@ -11,7 +11,7 @@ export const truthy = ["yes", "y", "true", "1", "on"];
 export const falsy = ["no", "n", "false", "0", "off"];
 
 export const createCommandParser = (opts: ParserOptions) => P.createLanguage({
-  singleWord: () => {
+  single_word: () => {
     return P.regexp(/(\w|\d)+/);
   },
   quote: () => {
@@ -57,6 +57,20 @@ export const createCommandParser = (opts: ParserOptions) => P.createLanguage({
       .mark()
       .desc(ArgType.ROLE_MENTION);
   },
+  [ArgType.CHANNEL]: (r: P.Language) => {
+    return P.alt(r.channel_mention, r.single_word)
+      .desc(ArgType.CHANNEL);
+  },
+  [ArgType.MEMBER]: (r: P.Language) => {
+    return P.alt(r.member_mention, r.single_word)
+      .desc(ArgType.MEMBER);
+  },
+  [ArgType.MEMBER_NAME]: (r: P.Language) => {
+    return r.single_word.desc(ArgType.MEMBER_NAME);
+  },
+  [ArgType.ROLE_NAME]: (r: P.Language) => {
+    return r.single_word.node(ArgType.ROLE_NAME).desc(ArgType.ROLE_NAME);
+  },
   [ArgType.NUMBER]: () => {
     return P.regex(/[0-9]+/)
       .map(Number)
@@ -82,7 +96,7 @@ export const createCommandParser = (opts: ParserOptions) => P.createLanguage({
   [ArgType.COMMAND]: (r: P.Language) => {
     const commandParser = opts.commands
       ? P.alt(...opts.commands.keyArray().map(P.string))
-      : r.singleWord;
+      : r.single_word;
     return commandParser
       .mark()
       .desc(ArgType.COMMAND);
