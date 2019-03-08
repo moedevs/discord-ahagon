@@ -5,7 +5,7 @@
 #### A zero bloat discord.js command framework. Not classy, but functional
 
 Unlike almost every other command framework, discord-ahagon does not rely on the verbose
-class syntax or `this` to implement functions. Allowing you to compose and reuse
+class syntax or `this` to implement commands. Allowing you to compose and reuse
 similar traits of commands and use concise arrow functions as well as giving you the ability 
 to hook into different parts of the command execution process.
 
@@ -82,13 +82,13 @@ const ban = {
     optional: true
   }],
   effect: (ctx, args) => {
-  	const start = new Date();
-  	console.log(`${ctx.message.member} used ban`);
-  	return (bannedMember) => {
-  		const time = new Date() - start;
-  		console.log(`Banned ${bannedMember.user.username} in ${time}ms.`);
-  		analyticsLibrary.send(time, { command: ctx.command.name });
-  	}
+    const start = new Date();
+    console.log(`${ctx.message.member} used ban`);
+    return (bannedMember) => {
+      const time = new Date() - start;
+      console.log(`Banned ${bannedMember.user.username} in ${time}ms.`);
+      analyticsLibrary.send(time, { command: ctx.command.name });
+    }
   },
   run: (ctx, args) => args.target.ban(args.reason)
 }
