@@ -86,7 +86,7 @@ describe("with no arguments", () => {
 });
 
 describe("with arguments", () => {
-  it("args are correctly labeled", () => {
+  it("labeling args", () => {
     const args: Argument[] = [...prefixAndCommand, {
       type: ArgType.NUMBER,
       name: "number"
@@ -97,10 +97,38 @@ describe("with arguments", () => {
     const out = parse(`!test ${one}`, parser);
     expect((out[2] as any).arg.name).toEqual("number");
   });
+
+  it("repeat args:numbers", () => {
+    const args: Argument[] = [...prefixAndCommand, {
+      type: ArgType.NUMBER,
+      name: "number",
+      repeat: true
+    }];
+
+    const parser = genParser(noCommandsParserOptions, args);
+    const one = 10;
+    const out = parse(`!test ${one}`, parser);
+    expect((out[2] as any).arg.name).toEqual("number");
+  });
+
+  it("repeat args:quoted strings", () => {
+    const args: Argument[] = [...prefixAndCommand, {
+      type: ArgType.QUOTED_STRING,
+      name: "number",
+      repeat: true
+    }];
+
+    const parser = genParser(noCommandsParserOptions, args);
+    const one = "this quoted string business works";
+    const two = "what's up chief";
+    const out = parse(`!test "${one}" "${two}"`, parser);
+    expect((out[2] as any).value[0].value).toEqual(one);
+    expect((out[2] as any).value[1].value).toEqual(two);
+  });
 });
 
 describe("arg types", () => {
-  it("parses numbers correctly", () => {
+  it("numbers", () => {
     const args: Argument[] = [...prefixAndCommand, {
       type: ArgType.NUMBER,
       name: "one"
@@ -113,13 +141,47 @@ describe("arg types", () => {
     const one = 10;
     const two = 15;
     const out = parse(`!add ${one} ${two}`, parser);
-    expect(out[2].status === "success").toBeTruthy();
-    expect(out[3].status === "success").toBeTruthy();
+
     expect((out[2] as Success<any>).value).toEqual(one);
     expect((out[3] as Success<any>).value).toEqual(two);
   });
 
-  it("parses channel mentions correctly", () => {
+  it("quoted strings", () => {
+    const args: Argument[] = [...prefixAndCommand, {
+      type: ArgType.QUOTED_STRING,
+      name: "one"
+    }];
+
+    const parser = genParser(noCommandsParserOptions, args);
+    const one = 10;
+    const two = 15;
+    const out = parse(`!add "${one} ${two}"`, parser);
+    expect((out[2] as Success<any>).value).toEqual(`${one} ${two}`);
+  });
+
+  it("truthy booleans", () => {
+    const args: Argument[] = [...prefixAndCommand, {
+      type: ArgType.BOOLEAN,
+      name: "one"
+    }];
+
+    const parser = genParser(noCommandsParserOptions, args);
+    const out = parse(`!add yes`, parser);
+    expect((out[2] as Success<any>).value).toEqual(true);
+  });
+
+  it("falsy booleans", () => {
+    const args: Argument[] = [...prefixAndCommand, {
+      type: ArgType.BOOLEAN,
+      name: "one"
+    }];
+
+    const parser = genParser(noCommandsParserOptions, args);
+    const out = parse(`!add no`, parser);
+    expect((out[2] as Success<any>).value).toEqual(false);
+  });
+
+  it("channel mentions", () => {
     const args: Argument[] = [...prefixAndCommand, {
       type: ArgType.CHANNEL_MENTION,
       name: "test"
@@ -130,7 +192,7 @@ describe("arg types", () => {
     const out = parse(`!test <#${id}>`, parser);
     expect((out[2] as any).value).toEqual(id);
   });
-  it("parses member mentions correctly", () => {
+  it("parses member mentions", () => {
     const args: Argument[] = [...prefixAndCommand, {
       type: ArgType.MEMBER_MENTION,
       name: "test"
@@ -139,6 +201,17 @@ describe("arg types", () => {
     const parser = genParser(noCommandsParserOptions, args);
     const id = "365561999532228608";
     const out = parse(`!test <@${id}>`, parser);
+    expect((out[2] as any).value).toEqual(id);
+  });
+  it("parses member role mentions", () => {
+    const args: Argument[] = [...prefixAndCommand, {
+      type: ArgType.ROLE_MENTION,
+      name: "test"
+    }];
+
+    const parser = genParser(noCommandsParserOptions, args);
+    const id = "365561999532228608";
+    const out = parse(`!test <@&${id}>`, parser);
     expect((out[2] as any).value).toEqual(id);
   });
 });
