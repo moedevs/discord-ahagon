@@ -1,35 +1,45 @@
-import { Client, Message, PermissionResolvable } from "discord.js";
+import { Client, Collection, Message, PermissionResolvable } from "discord.js";
 
+export type CommandMap = Collection<string, Command>;
+export type Prefix = string | string[];
 export type PrefixResolverFunc = (ctx: Context) => Promise<string> | string;
+export type CheckFunc = (ctx: Context) => Promise<boolean> | boolean;
+export type FailCallback = (ctx: Context, err: ParserError) => void;
+export type EffectCallback = (ctx: Context) => (ctx: Context) => void;
+export type CtxCallback = (ctx: Context) => void;
 
 export interface HandlerOptions {
-  prefix?: string;
+  prefix?: Prefix;
   mentionPrefix?: boolean;
   prefixResolver?: PrefixResolverFunc;
   commandsDirectory: string;
   checkTsFiles?: boolean;
 }
 
-export interface Handler {
-  commands: Command[];
+export interface CommandHandler {
+  commands: CommandMap;
+  useEffect?: (callback: EffectCallback) => void;
 }
 
 export interface Context {
   message: Message;
   client: Client;
-  handler: Handler;
+  commandHandler: CommandHandler;
 }
 
-export interface ArgCondition {
-  cond: (ctx: Context) => Promise<boolean> | boolean;
-  onFail: (ctx: Context) => void;
-  onEmpty: (ctx: Context) => void;
+export interface Check {
+  check: CheckFunc;
+  onFail: FailCallback;
 }
 
-export interface Arg {
-  type: string;
+export interface Argument {
+  type: ArgType;
   name: string;
-  conditions?: ArgCondition[];
+  optional?: boolean;
+  repeat?: boolean;
+  checks?: Check[];
+  onFail?: FailCallback;
+  onMissing?: CtxCallback;
 }
 
 export interface CommandPermission {
@@ -43,10 +53,33 @@ export interface ArgObject {
 
 export interface Command {
   name: string | string[];
-  args?: Arg[];
+  args?: Argument[];
   userPermissions?: CommandPermission;
   botPermissions?: CommandPermission;
   run: (ctx: Context, args: ArgObject) => void;
 }
 
-export type CtxCallback = (ctx: Context) => void;
+export interface ParserOptions {
+  prefix: Prefix;
+  mentionPrefix: boolean;
+  commands?: CommandMap;
+}
+
+export const enum ParserError {
+  MISSING_ARG = "missing_arg"
+}
+
+export const enum ArgType {
+  MEMBER_MENTION = "member_mention",
+  BOOLEAN = "boolean",
+  PREFIX = "prefix",
+  COMMAND = "command",
+  CHANNEL_MENTION = "channel_mention",
+  ROLE_MENTION = "role_mention",
+  NUMBER = "number",
+  STRING = "string",
+  FLAG = "flag",
+  WORD = "word",
+  QUOTED_STRING = "quoted_string",
+  TEXT = "text",
+}

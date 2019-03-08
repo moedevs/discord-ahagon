@@ -1,7 +1,8 @@
 {
     "defaultSeverity": "error",
     "extends": [
-        "tslint:recommended"
+        "tslint:recommended",
+        "tslint-eslint-rules"
     ],
     "jsRules": {},
     "rules": {
@@ -20,8 +21,16 @@
         "prefer-template": true,
         "prefer-for-of": true,
         "prefer-object-spread": true,
+        "object-literal-sort-keys": false,
+        "no-empty": [true, "allow-empty-functions"],
+        "variable-name": [true, "allow-leading-underscore"],
+        "interface-name": false,
+        "trailing-comma": false,
+        "deprecation": true,
         "prefer-readonly": true,
         "prefer-const": true
     },
-    "rulesDirectory": []
+    "rulesDirectory": [
+        "node_modules/tslint-eslint-rules/dist/rules"
+    ]
 }

@@ -1,8 +1,6 @@
-import { createCommand } from "../../command";
 
-
-export const test2 = createCommand({
+export const test2 = {
   name: "test2",
   run: () => {
-  }
-});
+  },
+};

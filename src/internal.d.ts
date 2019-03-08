@@ -1,20 +1,26 @@
 import { Message } from "discord.js";
-import { Command, CtxCallback, Handler, HandlerOptions } from "../main";
-
-type CommandMap = Map<string, Command>
+import { Parser } from "parsimmon";
+import { ArgType, CommandHandler, CommandMap, EffectCallback, HandlerOptions, Prefix } from "../main";
 
 export interface MessageContext {
   readonly message: Message;
   readonly opts: HandlerOptions;
-  readonly before: CtxCallback[];
-  readonly after: CtxCallback[];
+  readonly effects: EffectCallback[];
   readonly commands: CommandMap;
-  readonly handler: Handler;
+  readonly commandHandler: CommandHandler;
 }
 
 export interface FindCommandOptions {
   readonly content: string;
   readonly commands: CommandMap;
-  readonly prefix: string;
+  readonly prefix: Prefix;
   readonly mentionPrefix: boolean;
 }
+
+/**
+ * Allows for typesafe indexing of the object created by
+ * [[createCommandParser]]
+ */
+type ArgParsingLanguage = {
+  [k in ArgType]: Parser<any>
+};

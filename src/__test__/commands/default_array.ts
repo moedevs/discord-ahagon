@@ -1,6 +1,5 @@
-import { createCommand } from "../../command";
-
-export default [createCommand({
-  name: ['test'],
-  run: () => {}
-})];
+/* tslint:disable */
+export default [{
+  name: ["test"],
+  run: () => {},
+}];

@@ -1,0 +1,45 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/node:10
+    steps:
+      - checkout
+      - restore_cache:
+          key: discord-ahagon-{{ checksum "package.json" }}
+      - run: npm install
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: discord-ahagon-{{ checksum "package.json" }}
+      - persist_to_workspace:
+          root: .
+          paths: .
+  test:
+    docker:
+      - image: circleci/node:10
+    steps:
+      - attach_workspace:
+          at: .
+      - run: npm test
+  lint:
+    docker:
+      - image: circleci/node:10
+    steps:
+      - attach_workspace:
+          at: .
+      - run: npm run lint
+workflows:
+  version: 2
+  pipeline:
+    jobs:
+      - build
+      - test:
+          requires:
+            - build
+      - lint:
+          filters:
+            branches:
+              only: /master/
+          requires:
+            - build
