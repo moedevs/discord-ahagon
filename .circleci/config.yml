@@ -21,7 +21,12 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: npm test
+      - run: npm install --save-dev test-junit
+      - run:
+          command: jest --ci --runInBand --reporters=default --reporters=jest-junit
+          environment:
+            JEST_JUNIT_OUTPUT: "reports/junit/ts-test-results.xml"
+
   lint:
     docker:
       - image: circleci/node:10
