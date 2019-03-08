@@ -1,5 +1,5 @@
 import P from "parsimmon";
-import { ArgType, Argument, ParserOptions } from "../../main";
+import { ArgType, ParserOptions } from "../../main";
 import { ArgParsingLanguage } from "../internal";
 import { arrayify } from "../utils";
 
@@ -9,29 +9,6 @@ export const ROLES_PATTERN = /<@&([0-9]+)>/;
 
 export const truthy = ["yes", "y", "true", "1", "on"];
 export const falsy = ["no", "n", "false", "0", "off"];
-
-// const interpretEscapes = (str: string) => {
-//   const escapes = {
-//     b: "\b",
-//     f: "\f",
-//     n: "\n",
-//     r: "\r",
-//     t: "\t"
-//   };
-//   return str.replace(/\\(u[0-9a-fA-F]{4}|[^u])/, (_, escape) => {
-//     const type = escape.charAt(0);
-//     const hex = escape.slice(1);
-//     if (type === "u") {
-//       return String.fromCharCode(parseInt(hex, 16));
-//     }
-//     if (escapes.hasOwnProperty(type)) {
-//       return escapes[type];
-//     }
-//     return type;
-//   });
-// };
-
-
 
 export const createCommandParser = (opts: ParserOptions) => P.createLanguage({
   singleWord: () => {
