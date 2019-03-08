@@ -23,7 +23,7 @@ jobs:
           at: .
       - run: npm install --save-dev jest-junit
       - run:
-          command: jest --ci --runInBand --reporters=default --reporters=jest-junit
+          command: npx jest --ci --runInBand --reporters=default --reporters=jest-junit
           environment:
             JEST_JUNIT_OUTPUT: "reports/junit/ts-test-results.xml"
 
