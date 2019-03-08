@@ -11,16 +11,6 @@ to hook into different parts of the command execution process.
 
 ##### Warning: This library is still a work in progress, anything can change at any time
 
-## Helping out
-Not a programmer? No problem, We would still love to get your input!
-
-
-<a href="https://discord.gg/ZWW5CJw">
-  <img width="250" src="https://i.imgur.com/GlEHVES.png"></img>
-</a>
-
-Most discussion will be in the `#tech-talk` channel.
-
 ## Getting started
 
 Adding a command handler
