@@ -1,4 +1,3 @@
-import { Message } from "discord.js";
 import P from "parsimmon";
 import { ArgType, Argument, ParserOptions } from "../../main";
 import { ArgParsingLanguage } from "../internal";
@@ -8,14 +7,17 @@ const USERS_PATTERN = /<@!?([0-9])+>/;
 const CHANNELS_PATTERN = /<#[0-9]+>/;
 const ROLES_PATTERN = /<@&[0-9]+>/;
 
-const repeatArg = <T>(parser: P.Parser<T>) => parser.sepBy(P.string(" "));
+const repeatArg = <T>(parser: P.Parser<T>) => parser.sepBy(P.regex(/ +/));
 
-const lexeme = <T>(parser: P.Parser<T>) => parser.skip(P.all);
+const lexeme = <T>(parser: P.Parser<T>) => P.optWhitespace.then(parser).skip(P.all);
 
 const truthy = ["yes", "true", "1", "on"];
 const falsy = ["no", "false", "0", "off"];
 
-const createCommandParser = (args: Argument[], opts: ParserOptions) => P.createLanguage({
+export const createCommandParser = (args: Argument[], opts: ParserOptions) => P.createLanguage({
+  singleWord: () => {
+    return P.regexp(/(\w|\d)+/);
+  },
   quote: () => {
     return P.string('"');
   },
@@ -31,12 +33,12 @@ const createCommandParser = (args: Argument[], opts: ParserOptions) => P.createL
   },
   [ArgType.BOOLEAN]: (r: P.Language) => {
     return P.alt(r.true, r.false)
-      .node("boolean")
+      .mark()
       .desc(ArgType.BOOLEAN);
   },
   [ArgType.WORD]: () => {
     return P.letters
-      .node("word")
+      .mark()
       .desc(ArgType.WORD);
   },
   [ArgType.FLAG]: () => {
@@ -46,23 +48,23 @@ const createCommandParser = (args: Argument[], opts: ParserOptions) => P.createL
   },
   [ArgType.MEMBER_MENTION]: () => {
     return P.regex(USERS_PATTERN)
-      .node("member_mention")
+      .mark()
       .desc(ArgType.MEMBER_MENTION);
   },
   [ArgType.CHANNEL_MENTION]: () => {
     return P.regex(CHANNELS_PATTERN)
-      .node("channel_mention")
+      .mark()
       .desc(ArgType.CHANNEL_MENTION);
   },
   [ArgType.ROLE_MENTION]: () => {
     return P.regex(ROLES_PATTERN)
-      .node("role_mention")
+      .mark()
       .desc(ArgType.ROLE_MENTION);
   },
   [ArgType.NUMBER]: () => {
     return P.regex(/[0-9]+/)
       .map(Number)
-      .node("number")
+      .mark()
       .desc(ArgType.NUMBER);
   },
   [ArgType.STRING]: (r: P.Language) => {
@@ -73,118 +75,115 @@ const createCommandParser = (args: Argument[], opts: ParserOptions) => P.createL
     return r.quote
       .then(P.noneOf('"').many().tie())
       .skip(r.quote)
-      .node("quoted_string")
+      .mark()
       .desc(ArgType.QUOTED_STRING);
   },
   [ArgType.TEXT]: () => {
     return P.all
-      .node("text")
+      .mark()
       .desc(ArgType.TEXT);
   },
-  [ArgType.COMMAND]: () => {
-    return P.regexp(/(\w|\d)+/)
-      .node("command")
+  [ArgType.COMMAND]: (r: P.Language) => {
+    const commandParser = opts.commands
+      ? P.alt(...opts.commands.keyArray().map(P.string))
+      : r.singleWord;
+    return commandParser
+      .mark()
       .desc(ArgType.COMMAND);
   },
   [ArgType.PREFIX]: (r: P.Language) => {
     const prefixes = arrayify(opts.prefix);
-    const prefixParser = P.alt(...prefixes.map(P.string)).node("prefix");
+    const prefixParser = P.alt(...prefixes.map(P.string)).mark();
     const parser = P.alt(r.member_mention, prefixParser);
     return parser.desc(ArgType.PREFIX);
   },
 }) as ArgParsingLanguage;
 
-const input: Argument[] = [{
-  type: ArgType.COMMAND,
-  name: "command",
-}, {
-  type: ArgType.CHANNEL_MENTION,
-  name: "channels",
-  repeat: true
-}];
-
-const parserOptions = { prefix: ["!", "@", "uwu"], mentionPrefix: true };
-
-const lang = createCommandParser(input, parserOptions);
-
-const src = "!delete <#123214> <#12312412> <#15161>";
-
-const prefix: Argument = {
-  type: ArgType.PREFIX,
-  name: "prefix",
-};
-
-const isValidPrefix = (content: string, language: ArgParsingLanguage) =>
-  language[ArgType.PREFIX].skip(P.all).parse(content).status === true;
-
-const parsers: ParserArgs[] = [prefix, ...input].map((arg) => {
+export const processArguments = (args: Argument[], lang: ArgParsingLanguage) => args.map((arg) => {
   const parser = lang[arg.type];
   if (arg.repeat) {
     // repeat args are guaranteed to be one last
-    return { arg, parser: repeatArg(parser) };
+    return { arg, parser: lexeme(repeatArg(parser)) };
   }
   return { arg, parser: lexeme(parser) };
 });
 
-export interface ParseError {
-  name: string;
-  status: "success" | "fail";
+export const enum ArgumentError {
+  UNEXPECTED_ARGUMENT = "unexpected_argument",
+  EXTRA_ARGUMENT = "extra_argument",
+  MISSING_ARGUMENT = "missing_argument",
+  UNKNOWN_COMMAND = "unknown_command"
 }
+
+export interface ParseError {
+  readonly error: ArgumentError;
+  readonly target?: string;
+  readonly status: "success" | "fail";
+}
+
+export type ParserSuccess = P.Result<any>;
+
+export type ParserReturn = ParseError | ParserSuccess;
 
 export interface ParserArgs {
   arg: Argument;
   parser: P.Parser<any>;
 }
 
-const genSuccessfulOptional = (obj: object) => ({
-  ...obj,
-  status: "success",
-  value: ""
-});
-
-const genFailedOptional = (obj: object) => ({
-  ...obj,
-  status: "fail",
-  value: ""
-});
-
-const parse = (text: string, [head, ...tail]: ParserArgs[]): Array<P.Result<any>> => {
+export const parse = (text: string, [head, ...tail]: ParserArgs[]): ParserReturn[] => {
   const parsed = head.parser.parse(text);
 
   if (!parsed.status) {
+    if (head.arg.name === ArgType.COMMAND) {
+      // unknown command errors
+      return [{ error: ArgumentError.UNKNOWN_COMMAND, status: "fail", target: text }];
+    }
+
+    // this isn't a very accurate result but it's definitely good enough
     const [erroredWord] = text.slice(parsed.index.column).split(/\s+/);
-    return [];
+    return [{ error: ArgumentError.UNEXPECTED_ARGUMENT, status: "fail", target: erroredWord }];
   }
 
   let cursorPosition;
+  let out;
   if (parsed.value.end) {
     cursorPosition = parsed.value.end.offset;
+    out = { ...parsed.value, status: "success", arg: head.arg };
   } else if (Array.isArray(parsed.value)) {
-    cursorPosition = Math.max(...parsed.value.map((item: { end: number }) => item.end));
+    cursorPosition = Math.max(...parsed.value.map((item: any) => item.end.offset));
+    out = { value: parsed.value, status: "success", arg: head.arg };
   } else {
     throw Error(`Unexpected parser output ${JSON.stringify(parsed.value)}`);
   }
 
   const remainingText = text.slice(cursorPosition);
-  const out = { ...parsed.value, status: "success", ...head };
   const hasMissingArgs = !remainingText && tail.length;
+  const hasTooManyArgs = remainingText && !tail.length;
+  const isFinished = !remainingText && !tail.length;
 
   if (hasMissingArgs) {
     const nextUnentered = tail.find((obj) => !obj.arg.optional);
     if (!nextUnentered) {
       // all remaining args are optional
-      return [out, ...tail.map((obj) => genSuccessfulOptional(obj.arg))];
+      return [out, ...tail.map((obj) => ({ ...obj.arg, status: "success", value: "" }))];
     }
-    return [out, genFailedOptional(nextUnentered.arg)];
+    return [out, {
+      ...nextUnentered.arg,
+      status: "fail",
+      error: ArgumentError.MISSING_ARGUMENT,
+      target: nextUnentered
+    }];
   }
 
-  if (!remainingText) {
+  if (hasTooManyArgs) {
+    const [target] = remainingText.trim().split(/\s+/);
+    return [out, { status: "fail", error: ArgumentError.EXTRA_ARGUMENT, target, arg: head.arg }];
+  }
+
+  if (isFinished) {
     return out;
   }
 
   return [out, ...parse(remainingText, tail)];
 };
-console.log(parse(src, parsers));
-// const e = isValidPrefix("<@124125> help", lang);
 
-// console.log(e);

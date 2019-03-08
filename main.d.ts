@@ -62,6 +62,7 @@ export interface Command {
 export interface ParserOptions {
   prefix: Prefix;
   mentionPrefix: boolean;
+  commands?: CommandMap;
 }
 
 export const enum ParserError {
