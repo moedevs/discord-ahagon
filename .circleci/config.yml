@@ -21,7 +21,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: npm install --save-dev test-junit
+      - run: npm install --save-dev jest-junit
       - run:
           command: jest --ci --runInBand --reporters=default --reporters=jest-junit
           environment:
