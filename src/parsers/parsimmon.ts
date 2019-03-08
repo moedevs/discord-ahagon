@@ -69,7 +69,7 @@ export const createCommandParser = (opts: ParserOptions) => P.createLanguage({
     return r.single_word.desc(ArgType.MEMBER_NAME);
   },
   [ArgType.ROLE_NAME]: (r: P.Language) => {
-    return r.single_word.node(ArgType.ROLE_NAME).desc(ArgType.ROLE_NAME);
+    return r.single_word.desc(ArgType.ROLE_NAME);
   },
   [ArgType.NUMBER]: () => {
     return P.regex(/[0-9]+/)
