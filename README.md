@@ -93,4 +93,4 @@ or as default
 
 ![](umiko.gif)
 
-##### Made with <3 by the /r/NewGame community
+##### Made with <3 by the New Game community
